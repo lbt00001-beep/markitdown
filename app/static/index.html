@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MarkItDown Dashboard</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Panel de navegacion">
+        <div class="brand">
+          <span class="brand-mark">M</span>
+          <div>
+            <strong>MarkItDown</strong>
+            <span>Dashboard local</span>
+          </div>
+        </div>
+
+        <nav class="nav-tabs" aria-label="Vistas">
+          <button class="nav-tab active" type="button" data-view="convert">
+            <span aria-hidden="true">+</span>
+            Convertir
+          </button>
+          <button class="nav-tab" type="button" data-view="history">
+            <span aria-hidden="true">#</span>
+            Historial
+          </button>
+          <button class="nav-tab" type="button" data-view="formats">
+            <span aria-hidden="true">?</span>
+            Formatos
+          </button>
+          <button class="nav-tab" type="button" data-view="help">
+            <span aria-hidden="true">i</span>
+            Ayuda
+          </button>
+        </nav>
+
+        <section class="status-panel" aria-label="Estado de servicios">
+          <h2>Estado</h2>
+          <dl>
+            <div>
+              <dt>MarkItDown</dt>
+              <dd id="healthMarkitdown">Comprobando</dd>
+            </div>
+            <div>
+              <dt>OpenAI</dt>
+              <dd id="healthOpenai">Comprobando</dd>
+            </div>
+            <div>
+              <dt>Azure</dt>
+              <dd id="healthAzure">Comprobando</dd>
+            </div>
+          </dl>
+        </section>
+      </aside>
+
+      <main class="workspace">
+        <section class="topbar">
+          <div>
+            <p class="eyebrow">Conversor universal a Markdown</p>
+            <h1>Cuadro de mandos</h1>
+          </div>
+          <button class="icon-button" id="refreshJobs" type="button" title="Actualizar historial" aria-label="Actualizar historial">
+            <span aria-hidden="true">R</span>
+          </button>
+        </section>
+
+        <section class="view active" id="view-convert">
+          <div class="conversion-grid">
+            <section class="tool-panel">
+              <div class="segmented" role="tablist" aria-label="Tipo de entrada">
+                <button class="segment active" type="button" data-mode="files">Archivos</button>
+                <button class="segment" type="button" data-mode="url">URL</button>
+                <button class="segment" type="button" data-mode="text">Texto</button>
+                <button class="segment" type="button" data-mode="uri">URI</button>
+              </div>
+
+              <form id="fileForm" class="convert-form">
+                <label class="drop-zone" for="fileInput">
+                  <input id="fileInput" name="files" type="file" multiple />
+                  <span class="drop-icon" aria-hidden="true">^</span>
+                  <strong>Selecciona o arrastra archivos</strong>
+                  <small>PDF, Office, imagenes, audio, HTML, datos, ZIP y mas</small>
+                </label>
+                <div id="selectedFiles" class="file-list" aria-live="polite"></div>
+                <button class="primary-action" type="submit">Convertir archivos</button>
+              </form>
+
+              <form id="urlForm" class="convert-form hidden">
+                <label class="field-label" for="urlInput">URL publica</label>
+                <div class="input-row">
+                  <input id="urlInput" name="url" type="url" placeholder="https://example.com/documento.html" />
+                  <button class="primary-action" type="submit">Convertir</button>
+                </div>
+              </form>
+
+              <form id="textForm" class="convert-form hidden">
+                <label class="field-label" for="textInput">Texto o stream pegado</label>
+                <textarea id="textInput" name="content" rows="8" placeholder="Pega HTML, CSV, JSON, XML, Markdown o texto plano."></textarea>
+                <label class="field-label" for="filenameHint">Nombre sugerido</label>
+                <input id="filenameHint" name="filename_hint" type="text" value="texto-pegado.txt" />
+                <button class="primary-action" type="submit">Convertir texto</button>
+              </form>
+
+              <form id="uriForm" class="convert-form hidden">
+                <label class="field-label" for="uriInput">URI avanzada</label>
+                <textarea id="uriInput" name="uri" rows="4" placeholder="https://..., data:text/plain;base64,... o file:///C:/ruta/documento.pdf"></textarea>
+                <label class="switch-row">
+                  <input id="allowFileUri" type="checkbox" />
+                  <span>Permitir file:// local</span>
+                </label>
+                <button class="primary-action" type="submit">Convertir URI</button>
+              </form>
+
+              <details class="options-panel" open>
+                <summary>Opciones avanzadas</summary>
+                <div class="option-grid">
+                  <label class="switch-row">
+                    <input id="enableBuiltins" type="checkbox" checked />
+                    <span>Usar conversores internos</span>
+                  </label>
+                  <label class="switch-row">
+                    <input id="enablePlugins" type="checkbox" />
+                    <span>Activar plugins instalados</span>
+                  </label>
+                  <label class="switch-row">
+                    <input id="keepDataUris" type="checkbox" />
+                    <span>Mantener data URIs completas</span>
+                  </label>
+                  <label class="switch-row">
+                    <input id="strictHtml" type="checkbox" />
+                    <span>Detenerse si un HTML es demasiado complejo</span>
+                  </label>
+                  <label class="switch-row">
+                    <input id="useLlm" type="checkbox" />
+                    <span>Describir imagenes con LLM</span>
+                  </label>
+                  <label class="field-label">
+                    Clave de OpenAI
+                    <input id="openaiApiKey" type="password" autocomplete="off" placeholder="Opcional; tambien vale OPENAI_API_KEY" />
+                  </label>
+                  <label class="field-label">
+                    Direccion de API compatible con OpenAI
+                    <input id="openaiBaseUrl" type="url" placeholder="Opcional; tambien vale OPENAI_BASE_URL" />
+                  </label>
+                  <label class="field-label">
+                    Modelo LLM
+                    <input id="llmModel" type="text" value="gpt-4o" />
+                  </label>
+                  <label class="field-label">
+                    Prompt para imagenes
+                    <textarea id="llmPrompt" rows="3" placeholder="Describe contenido visual util para busqueda y analisis."></textarea>
+                  </label>
+                  <label class="field-label">
+                    Pista de extension
+                    <input id="extensionHint" type="text" placeholder=".html, .csv, .pdf..." />
+                  </label>
+                  <label class="field-label">
+                    Pista MIME
+                    <input id="mimeTypeHint" type="text" placeholder="text/html, application/pdf..." />
+                  </label>
+                  <label class="field-label">
+                    Charset
+                    <input id="charsetHint" type="text" placeholder="utf-8" />
+                  </label>
+                  <label class="field-label">
+                    Ruta de exiftool
+                    <input id="exiftoolPath" type="text" placeholder="Opcional; tambien vale EXIFTOOL_PATH" />
+                  </label>
+                  <label class="field-label">
+                    Style map DOCX
+                    <textarea id="styleMap" rows="3" placeholder="Reglas opcionales de Mammoth para Word."></textarea>
+                  </label>
+                  <label class="field-label">
+                    Clave de Azure
+                    <input id="azureApiKey" type="password" autocomplete="off" placeholder="Opcional; tambien vale AZURE_API_KEY" />
+                  </label>
+                  <label class="field-label">
+                    Azure Document Intelligence
+                    <input id="docintelEndpoint" type="url" placeholder="https://...cognitiveservices.azure.com/" />
+                  </label>
+                  <label class="field-label">
+                    Version API Document Intelligence
+                    <input id="docintelApiVersion" type="text" placeholder="2024-07-31-preview" />
+                  </label>
+                  <label class="field-label">
+                    Tipos Document Intelligence
+                    <input id="docintelFileTypes" type="text" placeholder="pdf,docx,pptx,xlsx,html,jpeg,png,bmp,tiff" />
+                  </label>
+                  <label class="field-label">
+                    Azure Content Understanding
+                    <input id="cuEndpoint" type="url" placeholder="https://...services.ai.azure.com/" />
+                  </label>
+                  <label class="field-label">
+                    Analyzer ID
+                    <input id="cuAnalyzerId" type="text" placeholder="Opcional" />
+                  </label>
+                  <label class="field-label">
+                    Tipos Content Understanding
+                    <input id="cuFileTypes" type="text" placeholder="pdf,docx,pptx,xlsx,html,txt,md,rtf,xml,eml,msg,jpeg,png,bmp,tiff,heif,mp4,mov,mp3..." />
+                  </label>
+                </div>
+              </details>
+            </section>
+
+            <section class="preview-panel" aria-label="Resultado Markdown">
+              <div class="preview-header">
+                <div>
+                  <h2>Resultado</h2>
+                  <p id="resultMeta">Sin conversiones todavia</p>
+                </div>
+                <div class="preview-actions">
+                  <button class="icon-button" id="copyMarkdown" type="button" title="Copiar Markdown" aria-label="Copiar Markdown">C</button>
+                  <a class="icon-button disabled" id="downloadMarkdown" title="Descargar Markdown" aria-label="Descargar Markdown">D</a>
+                  <a class="icon-button disabled" id="downloadPdf" title="Descargar PDF" aria-label="Descargar PDF">PDF</a>
+                  <a class="batch-action disabled" id="downloadBatch" title="Descargar lote completo" aria-label="Descargar lote completo">ZIP</a>
+                </div>
+              </div>
+              <label class="batch-selector hidden" id="batchSelector" for="batchResultSelect">
+                <span>Resultado que quieres revisar</span>
+                <select id="batchResultSelect"></select>
+              </label>
+              <pre id="markdownOutput" class="markdown-output">El Markdown convertido aparecera aqui.</pre>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="view-history">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Sesion actual</p>
+              <h2>Historial de trabajos</h2>
+            </div>
+          </div>
+          <div id="historyList" class="history-list"></div>
+        </section>
+
+        <section class="view" id="view-formats">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Cobertura</p>
+              <h2>Formatos disponibles</h2>
+            </div>
+          </div>
+          <div id="formatsGrid" class="formats-grid"></div>
+        </section>
+
+        <section class="view" id="view-help">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Guia rapida</p>
+              <h2>Ayuda</h2>
+            </div>
+          </div>
+
+          <div class="help-layout">
+            <article class="help-card help-intro">
+              <h3>Que hace esta app</h3>
+              <p>
+                Esta app transforma archivos, paginas web o texto pegado en un archivo Markdown. Markdown es texto
+                normal, pero ordenado: los titulos, listas, enlaces y tablas quedan escritos de una forma clara.
+              </p>
+              <p>
+                Ejemplo: si subes un PDF con apuntes, la app intenta sacar el texto y lo deja preparado para copiarlo,
+                guardarlo o usarlo en otra herramienta.
+              </p>
+            </article>
+
+            <article class="help-card">
+              <h3>Uso normal</h3>
+              <ol>
+                <li>Entra en Convertir.</li>
+                <li>Deja marcada la opcion Archivos.</li>
+                <li>Selecciona uno o varios documentos.</li>
+                <li>Pulsa Convertir archivos.</li>
+                <li>Revisa un resultado a la derecha o descargalo.</li>
+              </ol>
+              <p>
+                Si subes varios archivos, aparece un menu para elegir cual quieres leer. Tambien puedes descargar todos los resultados juntos en un ZIP.
+                Para la mayoria de tareas no hace falta tocar Opciones avanzadas.
+              </p>
+            </article>
+
+            <article class="help-card">
+              <h3>Tipos de entrada</h3>
+              <dl class="help-list">
+                <div>
+                  <dt>Archivos</dt>
+                  <dd>Para subir documentos de tu ordenador, como PDF, Word, Excel, PowerPoint, imagenes o ZIP.</dd>
+                </div>
+                <div>
+                  <dt>URL</dt>
+                  <dd>Para pegar una direccion de internet, por ejemplo una pagina web o un video de YouTube.</dd>
+                </div>
+                <div>
+                  <dt>Texto</dt>
+                  <dd>Para pegar directamente un texto, una tabla CSV, HTML, JSON, XML o Markdown.</dd>
+                </div>
+                <div>
+                  <dt>URI</dt>
+                  <dd>Es una entrada mas tecnica. Usala solo si sabes que tienes una direccion especial como data: o file:.</dd>
+                </div>
+              </dl>
+            </article>
+
+            <article class="help-card">
+              <h3>Resultado e historial</h3>
+              <p>
+                Resultado es la zona donde aparece el texto convertido. Si conviertes muchos archivos a la vez, usa el
+                menu Resultado que quieres revisar para pasar de uno a otro. El boton C significa copiar. El boton D
+                descarga el resultado en formato Markdown. El boton PDF permite descargar el texto convertido a PDF de forma nativa. El boton ZIP descarga todos los resultados completados del lote.
+              </p>
+              <p>
+                Historial guarda lo que has convertido mientras la app sigue abierta. Si algo falla, ahi veras el mensaje
+                de error.
+              </p>
+            </article>
+
+            <article class="help-card">
+              <h3>Opciones avanzadas</h3>
+              <p>
+                Si no sabes si necesitas una opcion avanzada, normalmente no la necesitas. Sirven para casos concretos.
+              </p>
+              <dl class="help-list">
+                <div>
+                  <dt>Conversores internos</dt>
+                  <dd>Dejalo activado. Son las herramientas normales que convierten PDF, Word, HTML, imagenes y otros formatos.</dd>
+                </div>
+                <div>
+                  <dt>Plugins</dt>
+                  <dd>Son complementos extra. Solo sirven si alguien ha instalado plugins de MarkItDown en este ordenador.</dd>
+                </div>
+                <div>
+                  <dt>Pistas de archivo</dt>
+                  <dd>Ayudan cuando la app no reconoce un archivo. Por ejemplo, puedes indicar .csv si sabes que es una tabla CSV.</dd>
+                </div>
+                <div>
+                  <dt>Data URIs completas</dt>
+                  <dd>Una data URI puede contener un archivo entero dentro de un texto muy largo. Normalmente es mejor dejarla acortada.</dd>
+                </div>
+                <div>
+                  <dt>HTML estricto</dt>
+                  <dd>Si se activa, un HTML demasiado complejo produce un error. Apagado, la app intenta rescatar al menos su texto.</dd>
+                </div>
+                <div>
+                  <dt>Exiftool y style map</dt>
+                  <dd>Son opciones para usuarios avanzados: metadatos de imagenes y reglas especiales para documentos Word.</dd>
+                </div>
+              </dl>
+            </article>
+
+            <article class="help-card">
+              <h3>OpenAI: describir imagenes</h3>
+              <p>
+                OpenAI es un servicio de inteligencia artificial por internet. En esta app solo se usa cuando activas
+                Describir imagenes con LLM. La imagen se envia al servicio y la respuesta se anade al Markdown como una descripcion.
+              </p>
+              <ul>
+                <li>Necesitas una clave de la API de OpenAI. Una suscripcion de ChatGPT no incluye automaticamente el uso de la API.</li>
+                <li>La API puede cobrar por uso. Las imagenes grandes suelen consumir mas que las pequenas.</li>
+                <li>El modelo indica que inteligencia artificial analizara la imagen. El prompt explica que quieres que describa.</li>
+                <li>La direccion compatible con OpenAI solo se cambia si utilizas otro proveedor que funciona de la misma manera.</li>
+              </ul>
+            </article>
+
+            <article class="help-card">
+              <h3>Azure: documentos y multimedia</h3>
+              <p>
+                Azure es la plataforma de servicios por internet de Microsoft. MarkItDown puede usar dos herramientas de Azure.
+              </p>
+              <dl class="help-list">
+                <div>
+                  <dt>Document Intelligence</dt>
+                  <dd>Lee documentos e imagenes dificiles. Reconoce texto escaneado, orden de lectura, tablas y estructura.</dd>
+                </div>
+                <div>
+                  <dt>Content Understanding</dt>
+                  <dd>Analiza documentos, imagenes, audio y video. Tambien puede obtener datos concretos, como fechas, importes, nombres o temas.</dd>
+                </div>
+                <div>
+                  <dt>Endpoint y analyzer</dt>
+                  <dd>Endpoint es la direccion de tu servicio de Azure. Analyzer es la receta que decide que debe buscar y como ordenar el resultado.</dd>
+                </div>
+              </dl>
+            </article>
+
+            <article class="help-card">
+              <h3>Coste, privacidad y claves</h3>
+              <ul>
+                <li>Las conversiones normales se hacen en tu ordenador. No necesitan OpenAI ni Azure.</li>
+                <li>Cuando activas OpenAI o escribes un endpoint de Azure, el archivo elegido se envia a ese servicio por internet.</li>
+                <li>OpenAI y Azure pueden cobrar por cada uso. La app no controla sus precios ni tu saldo.</li>
+                <li>La clave funciona como una contrasena. No la envies a otra persona ni la incluyas dentro del programa.</li>
+                <li>Cada usuario debe utilizar su propia cuenta y su propia clave. La app usa la clave durante la conversion y no la guarda.</li>
+              </ul>
+              <p>
+                En resumen: para PDF, Word, Excel, PowerPoint, HTML y otros archivos normales, deja estos servicios apagados.
+              </p>
+            </article>
+
+            <article class="help-card">
+              <h3>Seguridad y errores</h3>
+              <ul>
+                <li>La app bloquea direcciones internas del ordenador para evitar accesos no deseados.</li>
+                <li>file:// permite leer archivos locales por direccion. Activala solo si sabes que ruta estas usando.</li>
+                <li>La version para Windows incluye la herramienta necesaria para leer MP3 y MP4.</li>
+                <li>Si una conversion falla, revisa Historial. El mensaje suele decir que archivo u opcion dio problema.</li>
+              </ul>
+            </article>
+          </div>
+        </section>
+
+        <footer class="app-footer">
+          Copyright &copy; 2026 Luis Benedicto Tuz&oacute;n. Creado con Gemini 3.1 Pro High.
+        </footer>
+      </main>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="/static/app.js"></script>
+  </body>
+</html>

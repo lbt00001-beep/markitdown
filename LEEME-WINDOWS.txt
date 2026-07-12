@@ -1,0 +1,16 @@
+MARKITDOWN DASHBOARD PARA WINDOWS
+
+Copyright (c) 2026 Luis Benedicto Tuzón. Creado con GPT-5.6 Sol.
+
+1. Descomprime todo el contenido del ZIP en una carpeta.
+2. Abre MarkItDownDashboard.exe.
+3. Windows puede mostrar un aviso porque el programa no esta firmado. Comprueba que el archivo procede de una persona de confianza.
+4. La aplicacion se abre en una ventana de Chrome o Edge. Si no encuentra esos navegadores, utiliza el navegador predeterminado.
+5. Una segunda ejecucion cierra la ventana y el servidor anteriores antes de volver a abrirlos.
+
+Los resultados se guardan en:
+%LOCALAPPDATA%\MarkItDown Dashboard\outputs
+
+OpenAI y Azure son opcionales. Cada usuario debe usar su propia cuenta y sus propias claves. No compartas ni incluyas claves dentro de esta carpeta.
+
+La aplicacion funciona sin instalar Python.

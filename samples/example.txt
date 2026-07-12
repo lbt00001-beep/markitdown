@@ -1,0 +1,7 @@
+# Ejemplo MarkItDown
+
+Este archivo sirve para comprobar que el cuadro de mandos convierte contenido a Markdown.
+
+- Entrada local
+- Historial
+- Descarga de resultado
