@@ -37,11 +37,14 @@ else:
 ROOT = Path(__file__).resolve().parent.parent
 BUNDLE_ROOT = Path(getattr(sys, "_MEIPASS", ROOT))
 STATIC_DIR = BUNDLE_ROOT / "app" / "static"
-DATA_DIR = (
-    Path(os.getenv("LOCALAPPDATA", Path.home())) / "MarkItDown Dashboard"
-    if getattr(sys, "frozen", False)
-    else ROOT / "data"
-)
+if os.environ.get("VERCEL"):
+    DATA_DIR = Path("/tmp")
+else:
+    DATA_DIR = (
+        Path(os.getenv("LOCALAPPDATA", Path.home())) / "MarkItDown Dashboard"
+        if getattr(sys, "frozen", False)
+        else ROOT / "data"
+    )
 OUTPUT_DIR = DATA_DIR / "outputs"
 UPLOAD_DIR = DATA_DIR / "uploads"
 BATCH_DIR = DATA_DIR / "batches"
