@@ -113,7 +113,7 @@ class ConversionJob:
 
 jobs: dict[str, ConversionJob] = {}
 
-app = FastAPI(title="MarkItDown Dashboard", version="1.0.0")
+app = FastAPI(title="MarkItDown Dashboard", version="1.0.1")
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
